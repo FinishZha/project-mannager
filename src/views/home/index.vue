@@ -22,7 +22,7 @@
   }
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .home{
   width: 100vw;
   height: 100vh;
@@ -30,10 +30,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-}
-h1{
+
+  h1{
     font-size: 3.2em;
     line-height: 1.1;
     color: #b9b4b4;
+  }
 }
 </style>

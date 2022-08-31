@@ -5,6 +5,13 @@ import AutoImport from 'unplugin-auto-import/vite'
 
 // 其他配置参考 https://vitejs.dev/config/
 export default defineConfig({
+    css: {
+        preprocessorOptions: {
+            less: {
+                javascriptEnabled: true
+            }
+        }
+    },
   plugins: [
       vue(),
       AutoImport({
