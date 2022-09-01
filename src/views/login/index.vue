@@ -1,7 +1,7 @@
 <template>
 <div class="login">
   <a-row>
-    <a-col :xs="0" :sm="0" :md="14" :lg="16" :xl="18">
+    <a-col :xs="0" :sm="0" :md="14" :lg="14" :xl="18">
       <div class="login-text">
         <h1>欢迎光临</h1>
         <p>
@@ -10,7 +10,7 @@
         </p>
       </div>
     </a-col>
-    <a-col :xs="24" :sm="24" :md="10" :lg="8" :xl="6">
+    <a-col :xs="24" :sm="24" :md="10" :lg="10" :xl="6">
       <div class="login-form">
         <div class="form-text">
           <h1>项目总成及配置管理系统</h1>
@@ -20,7 +20,7 @@
               :model="formData"
               name="loginForm"
               ref="loginFormRef"
-              layout="horizontal"
+              layout="vertical"
               hideRequiredMark
               autocomplete="off"
               @finish="onFinish"
@@ -59,11 +59,25 @@
                     name="phone"
                     :rules="[{ required: true, message: '请输入手机号！'}]"
                 >
-                  <a-input v-model:value="formData.username"  placeholder="用户名" allowClear>
+                  <a-input v-model:value="formData.phone"  placeholder="手机号" allowClear>
                     <template #prefix>
-                      <user-outlined type="user" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+                      <mobile-outlined :style="{ color: 'rgba(0,0,0,.25)' }"/>
                     </template>
                   </a-input>
+                </a-form-item>
+                <a-form-item>
+                  <a-row>
+                    <a-col :span="16">
+                      <a-input v-model:value="formData.code" placeholder="验证码" allowClear>
+                        <template #prefix>
+                          <codepen-outlined  :style="{ color: 'rgba(0,0,0,.25)' }"/>
+                        </template>
+                      </a-input>
+                    </a-col>
+                    <a-col :span="6" :push="1">
+                      <a-button>获取验证码</a-button>
+                    </a-col>
+                  </a-row>
                 </a-form-item>
               </a-tab-pane>
             </a-tabs>
@@ -90,7 +104,7 @@
 </template>
 
 <script>
-import { LoginOutlined, SyncOutlined, UserOutlined, LockOutlined } from '@ant-design/icons-vue'
+import { LoginOutlined, SyncOutlined, UserOutlined, LockOutlined, MobileOutlined, CodepenOutlined} from '@ant-design/icons-vue'
 import {reactive, defineComponent, ref, getCurrentInstance} from "vue";
 import { message } from "ant-design-vue";
 
@@ -99,6 +113,8 @@ export default defineComponent({
     let activeTag = ref('tab1')
     let formData = reactive({
       username: '',
+      phone:'',
+      code:'',
       password: '',
       remember: false,
     })
@@ -133,7 +149,9 @@ export default defineComponent({
     LoginOutlined,
     SyncOutlined,
     UserOutlined,
-    LockOutlined
+    LockOutlined,
+    MobileOutlined,
+    CodepenOutlined,
   }
 })
 
@@ -156,10 +174,10 @@ export default defineComponent({
       color: #f9f9f9;
       font-size: 52px;
       font-weight: bolder;
-      line-height: 42px;
+      line-height: 16px;
     }
     p{
-      display: block;
+      //display: block;
       height: 200px;
       width: 320px;
       display: flex;
