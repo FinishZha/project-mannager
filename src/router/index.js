@@ -34,6 +34,11 @@ const routes = [
         ]
     },
     {
+        path:'/test',
+        name:'实验场',
+        component: ()=>import('@/views/test/index.vue')
+    },
+    {
         path: '/:pathMatch(.*)*',
         name: '404',
         component: ()=>import('@/views/error-page/404.vue')

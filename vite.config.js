@@ -16,7 +16,7 @@ export default defineConfig({
       vue(),
       AutoImport({
           imports: []
-      })
+      }),
   ],
   resolve: {
     alias: {
