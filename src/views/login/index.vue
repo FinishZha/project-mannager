@@ -26,7 +26,7 @@
               @finish="onFinish"
               @finishFailed="onFinishFailed"
           >
-            <a-tabs v-model:activeKey="activeTag" centered>
+            <a-tabs v-model:activeKey="activeTag" @change="tabsChange" centered>
               <a-tab-pane key="tab1" tab="账号登录">
                 <a-alert v-if="false" type="error" showIcon style="margin-bottom: 24px;" message="账号或密码错误" />
                 <a-form-item
@@ -49,52 +49,59 @@
                     </template>
                   </a-input-password>
                 </a-form-item>
+                <a-row v-if="false">
+                  <a-col :span="14">
+                    <a-form-item
+                        name="verification"
+                        :rules="[{ required: true, message: '请输入验证码！' }]"
+                    >
+                      <a-input v-model:value="formData.verification" placeholder="验证码">
+                        <template #prefix>
+                          <codepen-outlined :style="{ color: 'rgba(0,0,0,.25)' }"/>
+                        </template>
+                      </a-input>
+                    </a-form-item>
+                  </a-col>
+                  <a-col :span="8" :push="2">
+                    <img src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png" alt="验证码" height="36" width="100">
+                  </a-col>
+                </a-row>
                 <a-form-item name="remember">
                   <a-checkbox v-model:checked="formData.remember">记住密码</a-checkbox>
                   <a-button @click="goToForget" type="link" style="margin-left: 4rem">忘记密码</a-button>
                 </a-form-item>
-              </a-tab-pane>
-              <a-tab-pane key="tab2" tab="手机登录">
-                <a-form-item
-                    name="phone"
-                    :rules="[{ required: true, message: '请输入手机号！'}]"
-                >
-                  <a-input v-model:value="formData.phone"  placeholder="手机号" allowClear>
-                    <template #prefix>
-                      <mobile-outlined :style="{ color: 'rgba(0,0,0,.25)' }"/>
-                    </template>
-                  </a-input>
-                </a-form-item>
                 <a-form-item>
-                  <a-row>
-                    <a-col :span="16">
-                      <a-input v-model:value="formData.code" placeholder="验证码" allowClear>
-                        <template #prefix>
-                          <codepen-outlined  :style="{ color: 'rgba(0,0,0,.25)' }"/>
-                        </template>
-                      </a-input>
-                    </a-col>
-                    <a-col :span="6" :push="1">
-                      <a-button>获取验证码</a-button>
-                    </a-col>
-                  </a-row>
+                  <a-button
+                      type="primary"
+                      size="large"
+                      html-type="submit"
+                      block
+                      :loading='loginButton.buttonState'
+                      style="margin-bottom: 1.5rem">
+                    <template #icon>
+                      <login-outlined />
+                    </template>
+                    登录
+                  </a-button>
+                  <a-button
+                      size="large"
+                      block
+                      @click="reset">
+                    <template #icon>
+                      <sync-outlined />
+                    </template>
+                    重置
+                  </a-button>
                 </a-form-item>
+              </a-tab-pane>
+              <a-tab-pane key="tab2" tab="扫码登录">
+                <a-card :bordered="true" style="width: 100%">
+                    <template #cover>
+                      <img src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"/>
+                    </template>
+                </a-card>
               </a-tab-pane>
             </a-tabs>
-            <a-form-item>
-              <a-button type="primary" size="large" html-type="submit" block shape="round" style="margin-bottom: 1.5rem">
-                <template #icon>
-                  <login-outlined />
-                </template>
-                登录
-              </a-button>
-              <a-button shape="round" size="large" block @click="reset">
-                <template #icon>
-                  <sync-outlined />
-                </template>
-                重置
-              </a-button>
-            </a-form-item>
           </a-form>
         </div>
       </div>
@@ -104,45 +111,86 @@
 </template>
 
 <script>
+import { beforeLogin } from '@/views/login/login.js'
+import { useStore } from '@/store/user.js'
+import { DEBUG } from '@/config/setting.js'
 import { LoginOutlined, SyncOutlined, UserOutlined, LockOutlined, MobileOutlined, CodepenOutlined} from '@ant-design/icons-vue'
-import {reactive, defineComponent, ref, getCurrentInstance} from "vue";
+import {reactive, defineComponent, ref, getCurrentInstance, watch} from "vue";
 import { message } from "ant-design-vue";
-
+import router from "@/router/index.js";
+const userStore = useStore()
 export default defineComponent({
   setup(){
     let activeTag = ref('tab1')
     let formData = reactive({
       username: '',
-      phone:'',
-      code:'',
       password: '',
       remember: false,
+      verification:''
     })
-  //表单验证通过操作
+    let loginButton = reactive({
+      loginType: 0, //0 账号登录，1 手机验证码登录
+      buttonState: false,
+    })
+    //表单验证通过操作
     const onFinish = values => {
-      console.log('Success:', values);
-      message.success('登录成功，页面跳转中...')
+      loginButton.buttonState = true
+      let form = {
+        username:formData.username,
+        password:formData.password
+      }
+      if(beforeLogin(loginButton.loginType,form)){
+        userStore.USER_LOGIN_CHANGE(true)
+        router.replace('/')
+        setTimeout(()=>{
+          message.success('登录成功，页面跳转中...')
+          loginButton.buttonState = false
+        }, 3000)
+      }else {
+        userStore.USER_LOGIN_CHANGE(false)
+        setTimeout(()=>{
+          message.error('登录失败，账号密码错误')
+          loginButton.buttonState = false
+        }, 3000)
+      }
+      DEBUG && console.log('Success:', values);
     };
+
     //表单验证失败操作
     const onFinishFailed = errorInfo => {
-      console.log('Failed:', errorInfo);
-      message.error('登录失败，账户或密码错误！')
+      DEBUG && console.log('Failed:', errorInfo);
+      message.error('登录失败，账户或密码不能为空！')
     };
+
     //表单重置
     const reset = ()=>{
       message.success('重置成功...')
     }
+
     //跳转至忘记密码
     const goToForget = ()=>{
       message.warn('忘记密码页面开发中...')
     }
+
+    //tab切换监听
+    const tabsChange = (activeKey)=>{
+      if(activeKey === 'tab1'){
+        loginButton.loginType = 0
+      }else if(activeKey === 'tab2'){
+        loginButton.loginType = 1
+      }else {
+        throw new Error('你他娘的怎么找到这的?')
+      }
+    }
     return{
       formData,
       activeTag,
+      loginButton,
       onFinish,
       onFinishFailed,
       reset,
-      goToForget
+      goToForget,
+      tabsChange
     }
   },
   components:{
